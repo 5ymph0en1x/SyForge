@@ -201,8 +201,8 @@ def compare_vectors(oanda_vectors, forge_vectors):
                 args = [instru, -1]
                 orderlaunch(args)
                 if Tgr_Verbose is True:
-					txt_msg = "SELL: " + oanda_vectors[i].get('symbol')
-					tb.send_message(chatid, txt_msg)
+                    txt_msg = "SELL: " + oanda_vectors[i].get('symbol')
+                    tb.send_message(chatid, txt_msg)
                 print("SELL: ", oanda_vectors[i].get('symbol'))
             elif float(oanda_vectors[i].get('direction')) < 0 and float(forge_vectors[i].get('direction')) > 0 \
                     and float(direction[i].get('data')[1].split(']')[0]) > 0:
@@ -211,8 +211,8 @@ def compare_vectors(oanda_vectors, forge_vectors):
                 args = [instru, 1]
                 orderlaunch(args)
                 if Tgr_Verbose is True:
-					txt_msg = "BUY: " + oanda_vectors[i].get('symbol')
-					tb.send_message(chatid, txt_msg)
+                    txt_msg = "BUY: " + oanda_vectors[i].get('symbol')
+                    tb.send_message(chatid, txt_msg)
                 print("BUY: ", oanda_vectors[i].get('symbol'))
 
     filehandle.close()
