@@ -15,7 +15,6 @@ import requests
 from datetime import timezone
 from dateutil import parser
 from multiprocessing import Process
-import oandapyV20
 from oandapyV20 import API
 from oandapyV20.contrib.requests import MarketOrderRequest
 from oandapyV20.contrib.requests import TakeProfitDetails, StopLossDetails
@@ -30,11 +29,12 @@ import os
 import pandas as pd
 import telebot
 
+
 # Bot Parameters
 sl_tp_prc = 0.001
 Trailing = False
 trail_point = 5.0
-Tgr_Verbose = False
+Tgr_Verbose = True
 
 # OANDA Config
 accountID = "<Account ID>"
@@ -44,8 +44,8 @@ access_token = "<Account Token>"
 forge_key = "<1Forge Key>"
 
 # Telegram Config
-TOKEN = "<Telegram Token>"
 chatid = "<Chat ID>"
+TOKEN = "<Telegram Token>"
 tb = telebot.TeleBot(TOKEN)
 
 # Do Not Touch
@@ -102,6 +102,7 @@ def getForgePrice():
         price_list.append(info_list)
     return price_list
 
+
 def getOandaInstru(list_pairs):
     # strPair = ','.join(list_pairs)
     list_pairs_formated = []
@@ -111,10 +112,12 @@ def getOandaInstru(list_pairs):
     strPair = ','.join(list_pairs_formated)
     return strPair
 
+
 def getOandaStream():
     pairs_traded = getOandaInstru(list_pairs)
     stream = PricingStream(accountID=accountID, params={"instruments": pairs_traded})
     return stream
+
 
 def getOandaPrice():
     i = getOandaInstru(list_pairs)
@@ -169,53 +172,61 @@ def vectors(prices_t1, prices_t2):
 
 
 def compare_vectors(oanda_vectors, forge_vectors):
-    dir_raw = []
-    with open(data_dir + '/' + 'direction.txt', 'r') as filehandle:
-        filecontents = filehandle.readlines()
+    filehandle = None
+    try:
+        dir_raw = []
+        with open(data_dir + '/' + 'direction.txt', 'r') as filehandle:
+            filecontents = filehandle.readlines()
 
-        for line in filecontents:
-            # remove linebreak which is the last character of the string
-            current_place = line[:-1]
+            for line in filecontents:
+                # remove linebreak which is the last character of the string
+                current_place = line[:-1]
 
-            # add item to the list
-            dir_raw.append(current_place)
-    i = 0
-    direction = []
-    for pair in range(len(list_pairs)):
-        direction.append(pd.DataFrame(columns=['data']))
-    for dir_filt in dir_raw:
-        dir_split = dir_filt.split(",")
-        direction[i].loc[0] = dir_split[0]
-        direction[i].loc[1] = dir_split[1]
-        i += 1
-    # print(str(direction[7].get('data')[0].split('[')[1]))
+                # add item to the list
+                dir_raw.append(current_place)
+        i = 0
+        direction = []
+        for pair in range(len(list_pairs)):
+            direction.append(pd.DataFrame(columns=['data']))
+        for dir_filt in dir_raw:
+            dir_split = dir_filt.split(",")
+            direction[i].loc[0] = dir_split[0]
+            direction[i].loc[1] = dir_split[1]
+            i += 1
+        # print(str(direction[7].get('data')[0].split('[')[1]))
 
-    for i in range(0, 27):
-        if oanda_vectors[i].get('symbol') == forge_vectors[i].get('symbol')\
-                and oanda_vectors[i].get('symbol') == str(direction[i].get('data')[0].split('[')[1].split("'")[1]):
-            # print(oanda_vectors[i].get('symbol'))
-            if float(oanda_vectors[i].get('direction')) > 0 and float(forge_vectors[i].get('direction')) < 0 \
-                    and float(direction[i].get('data')[1].split(']')[0]) < 0:
-                instru_raw = oanda_vectors[i].get('symbol')
-                instru = instru_raw[:3] + '_' + instru_raw[3:]
-                args = [instru, -1]
-                orderlaunch(args)
-                if Tgr_Verbose is True:
-                    txt_msg = "SELL: " + oanda_vectors[i].get('symbol')
-                    tb.send_message(chatid, txt_msg)
-                print("SELL: ", oanda_vectors[i].get('symbol'))
-            elif float(oanda_vectors[i].get('direction')) < 0 and float(forge_vectors[i].get('direction')) > 0 \
-                    and float(direction[i].get('data')[1].split(']')[0]) > 0:
-                instru_raw = oanda_vectors[i].get('symbol')
-                instru = instru_raw[:3] + '_' + instru_raw[3:]
-                args = [instru, 1]
-                orderlaunch(args)
-                if Tgr_Verbose is True:
-                    txt_msg = "BUY: " + oanda_vectors[i].get('symbol')
-                    tb.send_message(chatid, txt_msg)
-                print("BUY: ", oanda_vectors[i].get('symbol'))
+        for i in range(0, 27):
+            if oanda_vectors[i].get('symbol') == forge_vectors[i].get('symbol')\
+                    and oanda_vectors[i].get('symbol') == str(direction[i].get('data')[0].split('[')[1].split("'")[1]):
+                # print(oanda_vectors[i].get('symbol'))
+                if float(oanda_vectors[i].get('direction')) > 0 and float(forge_vectors[i].get('direction')) < 0 \
+                        and float(direction[i].get('data')[1].split(']')[0]) < 0:
+                    instru_raw = oanda_vectors[i].get('symbol')
+                    instru = instru_raw[:3] + '_' + instru_raw[3:]
+                    args = [instru, -1]
+                    order_status = orderlaunch(args)
+                    if order_status is True:
+                        if Tgr_Verbose is True:
+                            txt_msg = "SELL: " + oanda_vectors[i].get('symbol')
+                            tb.send_message(chatid, txt_msg)
+                        print("SELL: ", oanda_vectors[i].get('symbol'))
+                elif float(oanda_vectors[i].get('direction')) < 0 and float(forge_vectors[i].get('direction')) > 0 \
+                        and float(direction[i].get('data')[1].split(']')[0]) > 0:
+                    instru_raw = oanda_vectors[i].get('symbol')
+                    instru = instru_raw[:3] + '_' + instru_raw[3:]
+                    args = [instru, 1]
+                    order_status = orderlaunch(args)
+                    if order_status is True:
+                        if Tgr_Verbose is True:
+                            txt_msg = "BUY: " + oanda_vectors[i].get('symbol')
+                            tb.send_message(chatid, txt_msg)
+                        print("BUY: ", oanda_vectors[i].get('symbol'))
 
-    filehandle.close()
+    except V20Error as e:
+        print("V20Error: {}".format(e))
+
+    finally:
+        filehandle.close()
 
 
 def close(pair_to_close):
@@ -302,7 +313,7 @@ def orderlaunch(args):
         # create the OrderCreate request
         rv = api.request(r)
         print(json.dumps(rv, indent=2))
-    except oandapyV20.exceptions.V20Error as err:
+    except V20Error as err:
         print(r.status_code, err)
         return False
     else:
@@ -322,7 +333,7 @@ def orderlaunch(args):
                     r = orders.OrderCreate(accountID, data=ordr.data)
                     rva = api.request(r)
                     print(json.dumps(rva, indent=2))
-        except oandapyV20.exceptions.V20Error as err:
+        except V20Error as err:
             print(r.status_code, err)
             return False
         else:
@@ -331,7 +342,7 @@ def orderlaunch(args):
 
 def main():
 
-    print('Starts Scanning...')
+    print('Starts Scanning Minute Data')
 
     minute_cached = 0
     ticker = 0
@@ -360,16 +371,22 @@ def main():
                             forge_vectors = vectors(forge_prices_t1, forge_prices_t2)
                             compare_vectors(oanda_vectors, forge_vectors)
                             ticker = 0
+                            '''
                             for j in list_pairs:
                                 instru = j[:3] + '_' + j[3:]
                                 profit = count_spe_profit(instru)
                                 if float(profit) > 0:
                                     close(instru)
+                            '''
                             minute_cached = datetime.now().time().minute
                             print("Minute Data Updated")
 
     except V20Error as e:
         print("Error: {}".format(e))
+
+    except KeyboardInterrupt:
+        print('Stopping Scanner')
+        pass
 
 
 if __name__ == '__main__':
@@ -383,6 +400,11 @@ if __name__ == '__main__':
         p1.join()
         p2.join()
         # '''
+
     except KeyboardInterrupt:
         print("  ----- This is the end ! -----")
+        pass
+
+    finally:
+        print("  ----- Shutdown -----")
         pass
