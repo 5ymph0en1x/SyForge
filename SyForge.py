@@ -1,6 +1,7 @@
 # Configuration
 # pip3 install oandapyV20
 # pip3 install pandas
+# pip3 install pyTelegramBotAPI
 # pip3 install python-dateutil
 # pip3 install requests
 # pip3 install simplejson
@@ -27,12 +28,13 @@ import oandapyV20.endpoints.trades as trades
 from oandapyV20.exceptions import V20Error
 import os
 import pandas as pd
-
+import telebot
 
 # Bot Parameters
 sl_tp_prc = 0.001
 Trailing = False
 trail_point = 5.0
+Tgr_Verbose = False
 
 # OANDA Config
 accountID = "<Account ID>"
@@ -40,6 +42,11 @@ access_token = "<Account Token>"
 
 # 1Forge Config
 forge_key = "<1Forge Key>"
+
+# Telegram Config
+TOKEN = "<Telegram Token>"
+chatid = "<Chat ID>"
+tb = telebot.TeleBot(TOKEN)
 
 # Do Not Touch
 list_pairs = ['EURUSD', 'GBPUSD', 'USDCHF', 'EURJPY', 'GBPJPY', 'USDJPY', 'EURGBP',
@@ -193,8 +200,9 @@ def compare_vectors(oanda_vectors, forge_vectors):
                 instru = instru_raw[:3] + '_' + instru_raw[3:]
                 args = [instru, -1]
                 orderlaunch(args)
-                txt_msg = "SELL: " + oanda_vectors[i].get('symbol')
-                tb.send_message(chatid, txt_msg)
+                if Tgr_Verbose is True:
+					txt_msg = "SELL: " + oanda_vectors[i].get('symbol')
+					tb.send_message(chatid, txt_msg)
                 print("SELL: ", oanda_vectors[i].get('symbol'))
             elif float(oanda_vectors[i].get('direction')) < 0 and float(forge_vectors[i].get('direction')) > 0 \
                     and float(direction[i].get('data')[1].split(']')[0]) > 0:
@@ -202,8 +210,9 @@ def compare_vectors(oanda_vectors, forge_vectors):
                 instru = instru_raw[:3] + '_' + instru_raw[3:]
                 args = [instru, 1]
                 orderlaunch(args)
-                txt_msg = "BUY: " + oanda_vectors[i].get('symbol')
-                tb.send_message(chatid, txt_msg)
+                if Tgr_Verbose is True:
+					txt_msg = "BUY: " + oanda_vectors[i].get('symbol')
+					tb.send_message(chatid, txt_msg)
                 print("BUY: ", oanda_vectors[i].get('symbol'))
 
     filehandle.close()
