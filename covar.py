@@ -3,7 +3,6 @@
 # pip3 install numpy
 # pip3 install oandapyV20
 # pip3 install pandas
-# pip3 install pyTelegramBotAPI
 # pip3 install python-dateutil
 # pip3 install schedule
 # pip3 install statsmodels
@@ -21,8 +20,8 @@ import os
 import pandas as pd
 import schedule
 import statsmodels.api as sm
-import telebot
 import time
+
 
 # Script Config
 time_units_back = 250
@@ -47,6 +46,7 @@ if not os.path.exists(graph_dir):
 data_dir = 'data'
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
+
 
 # Do Not Touch
 class trade_type:
@@ -392,9 +392,8 @@ def zscore(series):
 
 def fire():
     # initialization ***************************************************************
-    print('Starts Computing CoVariance')
+    print('Starts Compacting Data')
     total_c = time_units_back
-    TimeFrame = timeframe.M1
 
     symbols = []
     for pair in pairs:
@@ -411,12 +410,11 @@ def fire():
     closed_df = Data_Cleaning(dfs)
     closed_df.to_csv(data_dir + '/' + 'forex_data.csv', index=False)
 
-    print('Finished Compacting Data...')
+    print('Starts Computing CoVariance')
 
     # Read data from csv file
     df = pd.read_csv(data_dir + '/' + 'forex_data.csv')
 
-    # new_df = Filter_datetime(start_date, end_date, time, df)
     datas = Prepare_Data(df, pairs)
 
     directions = []
@@ -449,6 +447,7 @@ def fire():
         filehandle.writelines("%s\n" % direction for direction in direction_final)
     filehandle.close()
 
+
 def main():
     schedule.every().hour.at(":12").do(fire)
     schedule.every().hour.at(":27").do(fire)
@@ -457,12 +456,18 @@ def main():
 
     fire()
 
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print('Cancelling Schedule')
+        pass
+
 
 if __name__ == "__main__":
     try:
         main()
-    except:
+    except KeyboardInterrupt:
+        print("  ----- My only friend, the end ! -----")
         pass
