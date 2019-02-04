@@ -9,6 +9,7 @@
 # Execution
 # python covar.py
 
+
 from datetime import datetime
 from dateutil import parser
 from oandapyV20 import API
@@ -454,14 +455,14 @@ def main():
     schedule.every().hour.at(":42").do(fire)
     schedule.every().hour.at(":57").do(fire)
 
-    fire()
+    # fire()
 
     try:
         while True:
             schedule.run_pending()
             time.sleep(1)
     except KeyboardInterrupt:
-        print('Cancelling Schedule')
+        print('  Cancelling Schedule')
         pass
 
 
