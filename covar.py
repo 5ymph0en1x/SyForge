@@ -107,9 +107,9 @@ def get_data(symbols, total_candle):
                                                       params={"count": total_candle,
                                                               "granularity": "M1"})
         candles_data = api.request(candles_call)
-        reg = total_candle - 1
+        reg = 0
         iter += 1
-        for j in range(total_candle-1, -1, -1):
+        for j in range(0, total_candle, 1):
             candle_time = datetime.strptime(str(parser.parse(candles_data['candles'][j]['time'][:19])),
                                             '%Y-%m-%d %H:%M:%S')
             candle_sym_raw = candles_data['instrument']
@@ -120,7 +120,7 @@ def get_data(symbols, total_candle):
             candle_close = candles_data['candles'][j]['mid']['c']
             data = [candle_time, candle_sym, candle_open, candle_high, candle_low, candle_close]
             df[iter].loc[reg] = data
-            reg -= 1
+            reg += 1
 
     return df
 
