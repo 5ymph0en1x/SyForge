@@ -1,11 +1,5 @@
 # Configuration
-# pip3 install matplotlib
-# pip3 install numpy
-# pip3 install oandapyV20
-# pip3 install pandas
-# pip3 install python-dateutil
-# pip3 install schedule
-# pip3 install statsmodels
+# pip3 install -r requirements.txt
 # Execution
 # python covar.py
 
