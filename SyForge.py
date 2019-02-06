@@ -1,11 +1,5 @@
 # Configuration
-# pip3 install asyncio
-# pip3 install oandapyV20
-# pip3 install pandas
-# pip3 install pyTelegramBotAPI
-# pip3 install python-dateutil
-# pip3 install requests
-# pip3 install simplejson
+# pip3 install -r requirements.txt
 # Execution
 # python SyForge.py
 
@@ -41,6 +35,7 @@ import time
 asynchro = True
 async_type = 'Light'  # 'Heavy', 'Medium' or 'Light'
 spread_limit = 3.5
+trade_size = 1000  # 1000 -> 0.01 lot / 10 000 -> 0.1 lot / etc
 sl_tp_prc = 0.002
 Trailing = False
 trail_point = 5.0
@@ -436,7 +431,7 @@ def orderlaunch(args):
             close(pair_targeted)
         mkt_order = MarketOrderRequest(
             instrument=pair_targeted,
-            units=1000,
+            units=trade_size,
             takeProfitOnFill=TakeProfitDetails(price=take_profit).data,
             stopLossOnFill=StopLossDetails(price=stop_loss).data)
 
@@ -454,7 +449,7 @@ def orderlaunch(args):
             close(pair_targeted)
         mkt_order = MarketOrderRequest(
             instrument=pair_targeted,
-            units=-1000,
+            units=(trade_size * -1),
             takeProfitOnFill=TakeProfitDetails(price=take_profit).data,
             stopLossOnFill=StopLossDetails(price=stop_loss).data)
 
