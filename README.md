@@ -9,8 +9,8 @@ This script uses 2 asynchronous functions that are launched every minutes for th
 
 Configuration
 
-Just replace the TOKEN, ID and KEY fields with yours in BOTH files.
-Then, install the dependancies using the pip3 install commands located at the beginning of each file.
+Just replace the TOKEN, ID and KEY fields with yours in BOTH files (Oanda's account ID is the sub-account number).
+Then, install the dependencies using "pip3 install -r requirements.txt".
 
 ------------------------------------
 
